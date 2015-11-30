@@ -7,7 +7,7 @@
 //  Adapted from practical classes
 //
 //  Daniel Silva - 51908
-//  João Cravo   - 64...
+//  João Cravo   - 63784
 //
 //  Visual Computation - 2015
 //
@@ -27,6 +27,8 @@ var cubeVertexIndexBuffer = null;
 var cubeVertexTextureCoordBuffer;
 
 // The global transformation parameters
+var globalAngleYY = 0.0;
+var globalTz = 0.0;
 
 // The translation vector
 var tx = 0.0;
@@ -39,18 +41,23 @@ var angleYY = 0.0;
 var angleZZ = 0.0;
 
 // The scaling factors
-var sx = 0.25;
-var sy = 0.25;
-var sz = 0.25;
+var sx = 0.1;
+var sy = 0.1;
+var sz = 0.1;
 
-// Animation controls
+// GLOBAL Animation controls
+var globalRotationYY_ON = 1;
+var globalRotationYY_DIR = 1;
+var globalRotationYY_SPEED = 1;
+
+// Local Animation controls
 var rotationXX_ON = 1;
 var rotationXX_DIR = 1;
 var rotationXX_SPEED = 1;
 var rotationYY_ON = 1;
 var rotationYY_DIR = 1;
 var rotationYY_SPEED = 1;
-var rotationZZ_ON = 1;
+var rotationZZ_ON = 0;
 var rotationZZ_DIR = 1;
 var rotationZZ_SPEED = 1;
 
@@ -59,6 +66,19 @@ var primitiveType = null;
 
 // To allow choosing the projection type
 var projectionType = 0;
+
+// --- Model Material Features
+// Ambient coef.
+var kAmbi = [ 0.2, 0.2, 0.2 ];
+
+// Difuse coef.
+var kDiff = [ 0.7, 0.7, 0.7 ];
+
+// Specular coef.
+var kSpec = [ 0.7, 0.7, 0.7 ];
+
+// Phong coef.
+var nPhong = 100;
 
 // --- Storing the vertices defining the cube faces
 vertices = [
@@ -150,6 +170,30 @@ var cubeVertexIndices = [
     20, 21, 22,   20, 22, 23  // Left face
 ];
 
+// Initial model has just ONE TRIANGLE
+var vertices = [
+    // FRONTAL TRIANGLE
+    -0.5, -0.5,  0.5,
+    0.5, -0.5,  0.5,
+    0.5,  0.5,  0.5,
+];
+
+var normals = [
+    // FRONTAL TRIANGLE
+    0.0,  0.0,  1.0,
+    0.0,  0.0,  1.0,
+    0.0,  0.0,  1.0,
+];
+
+// Initial color values just for testing!!
+// They are to be computed by the Phong Illumination Model
+var colors = [
+    // FRONTAL TRIANGLE
+    1.00,  0.00,  0.00,
+    1.00,  0.00,  0.00,
+    1.00,  0.00,  0.00,
+];
+
 //----------------------------------------------------------------------------
 //
 // The WebGL code
@@ -213,6 +257,160 @@ function initBuffers() {
 
 //----------------------------------------------------------------------------
 
+//  Computing the illumination and rendering the model
+
+function computeIllumination( mvMatrix ) {
+    // Phong Illumination Model
+    // Clearing the colors array
+    for( var i = 0; i < colors.length; i++ )
+    {
+        colors[i] = 0.0;
+    }
+
+    // SMOOTH-SHADING
+    // Compute the illumination for every vertex
+    // Iterate through the vertices
+    for( var vertIndex = 0; vertIndex < vertices.length; vertIndex += 3 )
+    {
+        // For every vertex
+        // GET COORDINATES AND NORMAL VECTOR
+        var auxP = vertices.slice( vertIndex, vertIndex + 3 );
+        var auxN = normals.slice( vertIndex, vertIndex + 3 );
+
+        // CONVERT TO HOMOGENEOUS COORDINATES
+        auxP.push( 1.0 );
+        auxN.push( 0.0 );
+
+        // APPLY CURRENT TRANSFORMATION
+        var pointP = multiplyPointByMatrix( mvMatrix, auxP );
+        var vectorN = multiplyVectorByMatrix( mvMatrix, auxN );
+        normalize( vectorN );
+
+        // VIEWER POSITION
+        var vectorV = vec3();
+        if( projectionType == 0 ) {
+            // Orthogonal
+            vectorV[2] = 1.0;
+        }
+        else {
+            // Perspective
+            // Viewer at ( 0, 0 , 0 )
+            vectorV = symmetric( pointP );
+        }
+
+        normalize( vectorV );
+
+        // Compute the 3 components: AMBIENT, DIFFUSE and SPECULAR
+        // FOR EACH LIGHT SOURCE
+        for(var l = 0; l < lightSources.length; l++ )
+        {
+            if( lightSources[l].isOff() ) {
+                continue;
+            }
+
+            // INITIALIZE EACH COMPONENT, with the constant terms
+            var ambientTerm = vec3();
+            var diffuseTerm = vec3();
+            var specularTerm = vec3();
+
+            // For the current light source
+            ambient_Illumination = lightSources[l].getAmbIntensity();
+            int_Light_Source = lightSources[l].getIntensity();
+            pos_Light_Source = lightSources[l].getPosition();
+
+            // Animating the light source, if defined
+            var lightSourceMatrix = mat4();
+
+            // COMPLETE THE CODE FOR THE OTHER ROTATION AXES
+            if( lightSources[l].isRotYYOn() )
+            {
+                lightSourceMatrix = mult(
+                    lightSourceMatrix,
+                    rotationYYMatrix( lightSources[l].getRotAngleYY() ) );
+            }
+
+            for( var i = 0; i < 3; i++ )
+            {
+                // AMBIENT ILLUMINATION --- Constant for every vertex
+                ambientTerm[i] = ambient_Illumination[i] * kAmbi[i];
+                diffuseTerm[i] = int_Light_Source[i] * kDiff[i];
+                specularTerm[i] = int_Light_Source[i] * kSpec[i];
+            }
+
+            // DIFFUSE ILLUMINATION
+            var vectorL = vec4();
+            if( pos_Light_Source[3] == 0.0 )
+            {
+                // DIRECTIONAL Light Source
+                vectorL = multiplyVectorByMatrix(
+                    lightSourceMatrix,
+                    pos_Light_Source );
+            }
+            else
+            {
+                // POINT Light Source
+                // TO DO : apply the global transformation to the light source?
+                vectorL = multiplyPointByMatrix(
+                    lightSourceMatrix,
+                    pos_Light_Source );
+
+                for( var i = 0; i < 3; i++ )
+                {
+                    vectorL[ i ] -= pointP[ i ];
+                }
+            }
+
+            // Back to Euclidean coordinates
+            vectorL = vectorL.slice(0,3);
+            normalize( vectorL );
+            var cosNL = dotProduct( vectorN, vectorL );
+            if( cosNL < 0.0 )
+            {
+                // No direct illumination !!
+                cosNL = 0.0;
+            }
+
+            // SEPCULAR ILLUMINATION
+            var vectorH = add( vectorL, vectorV );
+            normalize( vectorH );
+            var cosNH = dotProduct( vectorN, vectorH );
+
+            // No direct illumination or viewer not in the right direction
+            if( (cosNH < 0.0) || (cosNL <= 0.0) )
+            {
+                cosNH = 0.0;
+            }
+
+            // Compute the color values and store in the colors array
+            var tempR = ambientTerm[0] + diffuseTerm[0] * cosNL + specularTerm[0] * Math.pow(cosNH, nPhong);
+            var tempG = ambientTerm[1] + diffuseTerm[1] * cosNL + specularTerm[1] * Math.pow(cosNH, nPhong);
+            var tempB = ambientTerm[2] + diffuseTerm[2] * cosNL + specularTerm[2] * Math.pow(cosNH, nPhong);
+
+            colors[vertIndex] += tempR;
+
+            // Avoid exceeding 1.0
+
+            if( colors[vertIndex] > 1.0 ) {
+                colors[vertIndex] = 1.0;
+            }
+
+            // Avoid exceeding 1.0
+            colors[vertIndex + 1] += tempG;
+            if( colors[vertIndex + 1] > 1.0 ) {
+                colors[vertIndex + 1] = 1.0;
+            }
+            colors[vertIndex + 2] += tempB;
+
+            // Avoid exceeding 1.0
+            if( colors[vertIndex + 2] > 1.0 ) {
+                colors[vertIndex + 2] = 1.0;
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+
 //  Drawing the model
 
 function drawModel( angleXX, angleYY, angleZZ,
@@ -231,6 +429,9 @@ function drawModel( angleXX, angleYY, angleZZ,
     // Passing the Model View Matrix to apply the current transformation
     var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
+
+    // Aux. Function for computing the illumination
+    //computeIllumination( mvMatrix );
 
     // Passing the buffers
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
@@ -320,11 +521,13 @@ function drawScene() {
         tx - 0.5, ty - 0.5, tz,
         mvMatrix,
         primitiveType );
+
+
 }
 
 //----------------------------------------------------------------------------
 //
-//  NEW --- Animation
+//  --- Animation
 //
 
 // Animation --- Updating transformation parameters
@@ -334,6 +537,10 @@ function animate() {
     var timeNow = new Date().getTime();
     if( lastTime != 0 ) {
         var elapsed = timeNow - lastTime;
+        // Global rotation
+        if( globalRotationYY_ON ) {
+            globalAngleYY += globalRotationYY_DIR * globalRotationYY_SPEED * (90 * elapsed) / 1000.0;
+        }
         if( rotationXX_ON ) {
             angleXX += rotationXX_DIR * rotationXX_SPEED * (90 * elapsed) / 1000.0;
         }
@@ -342,6 +549,11 @@ function animate() {
         }
         if( rotationZZ_ON ) {
             angleZZ += rotationZZ_DIR * rotationZZ_SPEED * (90 * elapsed) / 1000.0;
+        }
+        // Rotating the light sources
+        if( lightSources[0].isRotYYOn() ) {
+            var angle = lightSources[0].getRotAngleYY() + (90 * elapsed) / 1000.0;
+            lightSources[0].setRotAngleYY( angle );
         }
     }
     lastTime = timeNow;
@@ -435,7 +647,7 @@ function handleMouseMove(event) {
 
 function tick() {
     requestAnimFrame(tick);
-    // --- Processing keyboard events
+    // Processing keyboard events
     handleKeys();
     drawScene();
     animate();
@@ -452,7 +664,6 @@ function setEventListeners( canvas ){
     document.onmousemove = handleMouseMove;
 
     // ---Handling the keyboard
-    // From learningwebgl.com
     function handleKeyDown(event) {
         currentlyPressedKeys[event.keyCode] = true;
     }
@@ -462,6 +673,7 @@ function setEventListeners( canvas ){
     document.onkeydown = handleKeyDown;
     document.onkeyup = handleKeyUp;
 
+    // ---Handling HTML elements
     // Dropdown list
     var projection = document.getElementById("projection-selection");
     projection.addEventListener("click", function(){
@@ -476,7 +688,66 @@ function setEventListeners( canvas ){
     });
 
     // Button events
-
+    document.getElementById("XX-on-off-button").onclick = function(){
+        // Switching on / off
+        if( rotationXX_ON )
+            rotationXX_ON = 0;
+        else
+            rotationXX_ON = 1;
+    };
+    document.getElementById("XX-direction-button").onclick = function(){
+        // Switching the direction
+        if( rotationXX_DIR == 1 )
+            rotationXX_DIR = -1;
+        else
+            rotationXX_DIR = 1;
+    };
+    document.getElementById("XX-slower-button").onclick = function(){
+        rotationXX_SPEED *= 0.75;
+    };
+    document.getElementById("XX-faster-button").onclick = function(){
+        rotationXX_SPEED *= 1.25;
+    };
+    document.getElementById("YY-on-off-button").onclick = function(){
+        // Switching on / off
+        if( rotationYY_ON )
+            rotationYY_ON = 0;
+        else
+            rotationYY_ON = 1;
+    };
+    document.getElementById("YY-direction-button").onclick = function(){
+        // Switching the direction
+        if( rotationYY_DIR == 1 )
+            rotationYY_DIR = -1;
+        else
+            rotationYY_DIR = 1;
+    };
+    document.getElementById("YY-slower-button").onclick = function(){
+        rotationYY_SPEED *= 0.75;
+    };
+    document.getElementById("YY-faster-button").onclick = function(){
+        rotationYY_SPEED *= 1.25;
+    };
+    document.getElementById("ZZ-on-off-button").onclick = function(){
+        // Switching on / off
+        if( rotationZZ_ON )
+            rotationZZ_ON = 0;
+        else
+            rotationZZ_ON = 1;
+    };
+    document.getElementById("ZZ-direction-button").onclick = function(){
+        // Switching the direction
+        if( rotationZZ_DIR == 1 )
+            rotationZZ_DIR = -1;
+        else
+            rotationZZ_DIR = 1;
+    };
+    document.getElementById("ZZ-slower-button").onclick = function(){
+        rotationZZ_SPEED *= 0.75;
+    };
+    document.getElementById("ZZ-faster-button").onclick = function(){
+        rotationZZ_SPEED *= 1.25;
+    };
     document.getElementById("reset-button").onclick = function(){
         // The initial values
         tx = 0.0;
@@ -485,9 +756,9 @@ function setEventListeners( canvas ){
         angleXX = 0.0;
         angleYY = 0.0;
         angleZZ = 0.0;
-        sx = 0.25;
-        sy = 0.25;
-        sz = 0.25;
+        sx = 0.1;
+        sy = 0.1;
+        sz = 0.1;
         rotationXX_ON = 0;
         rotationXX_DIR = 1;
         rotationXX_SPEED = 1;
