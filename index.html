@@ -77,42 +77,56 @@
 
         <div class="row">
             <div class="col-xs-7">
-                <canvas id="my-canvas" class="" style="border:1px solid #000000;" width="800" height="450"></canvas>
+                <canvas id="my-canvas" class="" style="border:1px solid #000000;" width="750" height="410"></canvas>
             </div>
 
             <div class="col-xs-5">
                 <div class="row">
                     <div class="col-xs-4">
-                        <p>Model XX rotation:</p>
+                        <p>Model XX rotation:
                             <button class="btn btn-xs btn-success" id="XX-on-off-button">On / Off</button>
-                            <button class="btn btn-xs btn-default" id="XX-direction-button">Change Direction</button>
-                            <button class="btn btn-xs btn-default" id="XX-slower-button">Slower</button>
-                            <button class="btn btn-xs btn-default" id="XX-faster-button">Faster</button>
+                            <button class="btn btn-xs btn-primary" id="XX-direction-button">Change Direction</button>
+                            <button class="btn btn-xs btn-primary" id="XX-slower-button">Slower</button>
+                            <button class="btn btn-xs btn-primary" id="XX-faster-button">Faster</button>
+                        </p>
                     </div>
                     <div class="col-xs-4">
                         <p>Model YY rotation:
                             <button class="btn btn-xs btn-success" id="YY-on-off-button">On / Off</button>
-                            <button class="btn btn-xs btn-default" id="YY-direction-button">Change Direction</button>
-                            <button class="btn btn-xs btn-default" id="YY-slower-button">Slower</button>
-                            <button class="btn btn-xs btn-default" id="YY-faster-button">Faster</button>
+                            <button class="btn btn-xs btn-danger" id="YY-direction-button">Change Direction</button>
+                            <button class="btn btn-xs btn-danger" id="YY-slower-button">Slower</button>
+                            <button class="btn btn-xs btn-danger" id="YY-faster-button">Faster</button>
                         </p>
                     </div>
                     <div class="col-xs-4">
                         <p>Model ZZ rotation:
                             <button class="btn btn-xs btn-success" id="ZZ-on-off-button">On / Off</button>
-                            <button class="btn btn-xs btn-default" id="ZZ-direction-button">Change Direction</button>
-                            <button class="btn btn-xs btn-default" id="ZZ-slower-button">Slower</button>
-                            <button class="btn btn-xs btn-default" id="ZZ-faster-button">Faster</button>
+                            <button class="btn btn-xs btn-warning" id="ZZ-direction-button">Change Direction</button>
+                            <button class="btn btn-xs btn-warning" id="ZZ-slower-button">Slower</button>
+                            <button class="btn btn-xs btn-warning" id="ZZ-faster-button">Faster</button>
                         </p>
                     </div>
                 </div>
-
+                <br>
                 <div class="row">
                     <div class="col-xs-12">
                         <p>Choose the <b>projection type</b>:
                             <select id="projection-selection">
                                 <option value="0">Orthogonal Projection</option>
                                 <option value="1">Perspective Projection</option>
+                            </select>
+                        </p>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <p>
+                            Chose the <b><u>algorithm</u></b> to sort:
+                            <select id="algorithm-selection">
+                                <option value="0">Merge</option>
+                                <option value="1">Quick</option>
+                                <option value="2">...</option>
                             </select>
                         </p>
                     </div>
