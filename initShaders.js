@@ -2,14 +2,9 @@
 //
 //  initShaders.js 
 //
-//	Applying a texture and blending
+//	Getting, compiling and linking the vertex and the fragment shaders
 //
-//  Adapted from practical classes
-//
-//  Daniel Silva - 51908
-//  João Cravo   - 63784
-//
-//  Visual Computation - 2015
+//  J. Madeira - October 2015 / November 2015
 //
 //////////////////////////////////////////////////////////////////////////////
 
