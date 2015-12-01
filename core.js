@@ -178,9 +178,6 @@ function handleLoadedTexture(texture) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
-
-//var webGLTexture = [];
-
 function initTexture() {
     //for(; i<NUM_CUBES; i++) {
     //    webGLTexture[i] = gl.createTexture();
@@ -273,7 +270,7 @@ function drawModel( angleXX, angleYY, angleZZ,
                     tx, ty, tz,
                     mvMatrix,
                     primitiveType,
-                    i ) {
+                    i) {
 
     // Pay attention to transformation order !!
     mvMatrix = mult( mvMatrix, translationMatrix( tx, ty, tz ) );
@@ -345,6 +342,17 @@ function drawScene() {
     // --- Instantianting the same model more than once !!
     // And with diferent transformation parameters !!
     // Call the drawModel function !!
+    var offset = 0.9;
+    for(var i=0; i<NUM_CUBES; i++) {
+        // Instance i models
+        drawModel( angleXX, angleYY, angleZZ,  // CW rotations
+            sx, sy, sz,
+            tx - offset, ty, tz,
+            mvMatrix,
+            primitiveType,
+            i);
+        offset -= 0.22;
+    }
 
     //// Instance 1 --- RIGHT TOP
     //drawModel( -angleXX, angleYY, angleZZ,
@@ -373,18 +381,6 @@ function drawScene() {
     //           tx - 0.5, ty - 0.5, tz,
     //           mvMatrix,
     //           primitiveType );
-
-    var offset = 0.9;
-    for(var i=0; i<NUM_CUBES; i++) {
-        // Instance i models
-        drawModel( angleXX, angleYY, angleZZ,  // CW rotations
-            sx, sy, sz,
-            tx - offset, ty, tz,
-            mvMatrix,
-            primitiveType,
-            i);
-        offset -= 0.22;
-    }
 }
 
 //----------------------------------------------------------------------------
@@ -649,10 +645,13 @@ function initWebGL( canvas ) {
         // DEFAULT: The viewport occupies the whole canvas
         // DEFAULT: The viewport background color is WHITE
 
+        // Enable FACE CULLING
+        gl.enable( gl.CULL_FACE );
+
         // - Drawing the triangles defining the model
         primitiveType = gl.TRIANGLES;
         // DEFAULT: Blending is DISABLED
-        //gl.enable( gl.BLEND ); // Enable it
+        gl.enable( gl.BLEND ); // Enable it
     } catch (e) {
     }
     if (!gl) {
