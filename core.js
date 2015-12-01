@@ -39,9 +39,9 @@ var angleYY = 0.0;
 var angleZZ = 0.0;
 
 // The scaling factors
-var sx = 0.1;
-var sy = 0.1;
-var sz = 0.1;
+var sx = 0.05;
+var sy = 0.05;
+var sz = 0.05;
 
 // Local Animation controls
 var rotationXX_ON = 1;
@@ -152,7 +152,7 @@ var cubeVertexIndices = [
 
 
 // Declare number of Cubes
-var NUM_CUBES = 10;
+var NUM_CUBES = 9;
 
 //----------------------------------------------------------------------------
 //
@@ -166,6 +166,9 @@ var NUM_CUBES = 10;
 
 // Handling the Textures
 // From www.learningwebgl.com
+var webGLTexture = [];
+var i = 0;
+
 function handleLoadedTexture(texture) {
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -176,18 +179,62 @@ function handleLoadedTexture(texture) {
 }
 
 
-var webGLTexture = [];
+//var webGLTexture = [];
 
 function initTexture() {
-    for(var i=0; i<NUM_CUBES; i++) {
-        webGLTexture[i] = gl.createTexture();
-        webGLTexture[i].image = new Image();
-        webGLTexture[i].image.onload = function () {
-            handleLoadedTexture(webGLTexture[i])
-        }
+    //for(; i<NUM_CUBES; i++) {
+    //    webGLTexture[i] = gl.createTexture();
+    //    webGLTexture[i].image = new Image();
+    //    webGLTexture[i].image.onload = function () {
+    //        handleLoadedTexture(webGLTexture[i])
+    //    }
+    //    webGLTexture[i].image.src = "img/number"+(i+1)+".jpg";
+    //}
 
-        webGLTexture[i].image.src = "img/gito.jpg";
-    }
+    webGLTexture[0] = gl.createTexture();
+    webGLTexture[0].image = new Image();
+    webGLTexture[0].image.onload = function () { handleLoadedTexture(webGLTexture[0]) }
+    webGLTexture[0].image.src = "img/number1.jpg";
+
+    webGLTexture[1] = gl.createTexture();
+    webGLTexture[1].image = new Image();
+    webGLTexture[1].image.onload = function () { handleLoadedTexture(webGLTexture[1]) }
+    webGLTexture[1].image.src = "img/number2.jpg";
+
+    webGLTexture[2] = gl.createTexture();
+    webGLTexture[2].image = new Image();
+    webGLTexture[2].image.onload = function () { handleLoadedTexture(webGLTexture[2]) }
+    webGLTexture[2].image.src = "img/number3.jpg";
+
+    webGLTexture[3] = gl.createTexture();
+    webGLTexture[3].image = new Image();
+    webGLTexture[3].image.onload = function () { handleLoadedTexture(webGLTexture[3]) }
+    webGLTexture[3].image.src = "img/number4.jpg";
+
+    webGLTexture[4] = gl.createTexture();
+    webGLTexture[4].image = new Image();
+    webGLTexture[4].image.onload = function () { handleLoadedTexture(webGLTexture[4]) }
+    webGLTexture[4].image.src = "img/number5.jpg";
+
+    webGLTexture[5] = gl.createTexture();
+    webGLTexture[5].image = new Image();
+    webGLTexture[5].image.onload = function () { handleLoadedTexture(webGLTexture[5]) }
+    webGLTexture[5].image.src = "img/number6.jpg";
+
+    webGLTexture[6] = gl.createTexture();
+    webGLTexture[6].image = new Image();
+    webGLTexture[6].image.onload = function () { handleLoadedTexture(webGLTexture[6]) }
+    webGLTexture[6].image.src = "img/number7.jpg";
+
+    webGLTexture[7] = gl.createTexture();
+    webGLTexture[7].image = new Image();
+    webGLTexture[7].image.onload = function () { handleLoadedTexture(webGLTexture[7]) }
+    webGLTexture[7].image.src = "img/number8.jpg";
+
+    webGLTexture[8] = gl.createTexture();
+    webGLTexture[8].image = new Image();
+    webGLTexture[8].image.onload = function () { handleLoadedTexture(webGLTexture[8]) }
+    webGLTexture[8].image.src = "img/number9.jpg";
 }
 
 //----------------------------------------------------------------------------
@@ -234,7 +281,7 @@ function drawModel( angleXX, angleYY, angleZZ,
     mvMatrix = mult( mvMatrix, rotationYYMatrix( angleYY ) );
     mvMatrix = mult( mvMatrix, rotationXXMatrix( angleXX ) );
     mvMatrix = mult( mvMatrix, scalingMatrix( sx, sy, sz ) );
-                         
+
     // Passing the Model View Matrix to apply the current transformation
     var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     gl.uniformMatrix4fv(mvUniform, false, new Float32Array(flatten(mvMatrix)));
@@ -254,7 +301,7 @@ function drawModel( angleXX, angleYY, angleZZ,
     
     // --- Blending
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    var alpha = 0.5
+    var alpha = 1;
     gl.uniform1f(shaderProgram.alphaUniform, alpha);
     
     // The vertex indices
@@ -336,7 +383,7 @@ function drawScene() {
             mvMatrix,
             primitiveType,
             i);
-        offset -= 0.2;
+        offset -= 0.22;
     }
 }
 
@@ -605,7 +652,7 @@ function initWebGL( canvas ) {
         // - Drawing the triangles defining the model
         primitiveType = gl.TRIANGLES;
         // DEFAULT: Blending is DISABLED
-        gl.enable( gl.BLEND ); // Enable it
+        //gl.enable( gl.BLEND ); // Enable it
     } catch (e) {
     }
     if (!gl) {
