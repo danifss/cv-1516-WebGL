@@ -57,7 +57,7 @@ var rotationXX_SPEED = 1;
 var rotationYY_ON = 1;
 var rotationYY_DIR = 1;
 var rotationYY_SPEED = 1;
-var rotationZZ_ON = 0;
+var rotationZZ_ON = 1;
 var rotationZZ_DIR = 1;
 var rotationZZ_SPEED = 1;
 
@@ -66,6 +66,9 @@ var primitiveType = null;
 
 // To allow choosing the projection type
 var projectionType = 0;
+
+//To allow choosing the algorithm to sort
+var algorithmType = 0;
 
 // --- Model Material Features
 // Ambient coef.
