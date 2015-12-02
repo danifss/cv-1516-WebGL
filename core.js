@@ -152,7 +152,7 @@ var cubeVertexIndices = [
 
 
 // Declare number of Cubes
-var NUM_CUBES = 10;
+var NUM_CUBES = 9;
 
 //----------------------------------------------------------------------------
 //
