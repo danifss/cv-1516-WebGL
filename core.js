@@ -153,6 +153,10 @@ var cubeVertexIndices = [
 
 // Declare number of Cubes
 var NUM_CUBES = 9;
+// Algorithm Type
+var algorithmType = 0;
+// Numbers List
+var numberList = [];
 
 //----------------------------------------------------------------------------
 //
@@ -502,6 +506,49 @@ function tick() {
 
 //----------------------------------------------------------------------------
 //
+//  Bubble Sort Algorithm
+//
+function bubbleSort(a)
+{
+    var swapped;
+    do {
+        swapped = false;
+        for (var i=0; i < a.length-1; i++) {
+            if (a[i] > a[i+1]) {
+                var temp = a[i];
+                a[i] = a[i+1];
+                a[i+1] = temp;
+                swapped = true;
+            }
+        }
+    } while (swapped);
+}
+//----------------------------------------------------------------------------
+//
+//  QuickSort Sort Algorithm
+//
+function quicksort(arr)
+{
+    if (arr.length == 0)
+        return [];
+
+    var left = new Array();
+    var right = new Array();
+    var pivot = arr[0];
+
+    for (var i = 1; i < arr.length; i++) {
+        if (arr[i] < pivot) {
+            left.push(arr[i]);
+        } else {
+            right.push(arr[i]);
+        }
+    }
+    return quicksort(left).concat(pivot, quicksort(right));
+}
+
+
+//----------------------------------------------------------------------------
+//
 //  User Interaction
 //
 
@@ -542,7 +589,29 @@ function setEventListeners( canvas ){
         }   
     });
 
+    var algType = document.getElementById("algorithm-selection");
+    algType.addEventListener("click", function(){
+        // Getting the selection
+        var a = algType.selectedIndex;
+        switch(a){
+            case 0 : algorithmType = 0; // Bubble Sort
+                break;
+            case 1 : algorithmType = 1; // Quick Sort
+                break;
+            case 2 : algorithmType = 2; // Merge Sort
+                break;
+            default: algorithmType = 0;
+                break;
+        }
+    });
+
+
     // Button events
+    document.getElementById("startSort").onclick = function(){
+        var text = document.getElementById("inputNumbers").textContent;
+        numberList = text.split(',');
+        alert(numberList);
+    };
     document.getElementById("XX-on-off-button").onclick = function(){
         // Switching on / off
         if( rotationXX_ON ) {
