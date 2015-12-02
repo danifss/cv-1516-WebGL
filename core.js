@@ -34,7 +34,7 @@ var ty = 0.0;
 var tz = 0.0;
 
 // The rotation angles in degrees
-var angleXX = 0.0;
+var angleXX = 30.0;
 var angleYY = 0.0;
 var angleZZ = 0.0;
 
@@ -44,7 +44,7 @@ var sy = 0.05;
 var sz = 0.05;
 
 // Local Animation controls
-var rotationXX_ON = 1;
+var rotationXX_ON = 0;
 var rotationXX_DIR = 1;
 var rotationXX_SPEED = 1;
 var rotationYY_ON = 1;
@@ -157,6 +157,8 @@ var NUM_CUBES = 9;
 var algorithmType = 0;
 // Numbers List
 var numberList = [];
+// Algorithm time
+var globalAlgTime = 0;
 
 //----------------------------------------------------------------------------
 //
@@ -296,7 +298,7 @@ function drawModel( angleXX, angleYY, angleZZ,
     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, cubeVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, webGLTexture[i]);
+    gl.bindTexture(gl.TEXTURE_2D, webGLTexture[i-1]);
         
     gl.uniform1i(shaderProgram.samplerUniform, 0);
     
@@ -347,14 +349,14 @@ function drawScene() {
     // And with diferent transformation parameters !!
     // Call the drawModel function !!
     var offset = 0.9;
-    for(var i=0; i<NUM_CUBES; i++) {
+    for(var i=0; i<numberList.length; i++) {
         // Instance i models
         drawModel( angleXX, angleYY, angleZZ,  // CW rotations
             sx, sy, sz,
             tx - offset, ty, tz,
             mvMatrix,
             primitiveType,
-            i);
+            numberList[i]);
         offset -= 0.22;
     }
 
@@ -496,7 +498,7 @@ function handleMouseMove(event) {
 // Timer
 
 function tick() {
-    requestAnimFrame(tick);
+    //requestAnimFrame(tick);
     // Processing keyboard events
     handleKeys();
     drawScene();
@@ -507,6 +509,7 @@ function tick() {
 //----------------------------------------------------------------------------
 //
 //  Bubble Sort Algorithm
+//  From http://www.stoimen.com/blog/2010/07/09/friday-algorithms-javascript-bubble-sort/
 //
 function bubbleSort(a)
 {
@@ -526,6 +529,7 @@ function bubbleSort(a)
 //----------------------------------------------------------------------------
 //
 //  QuickSort Sort Algorithm
+//  From http://www.stoimen.com/blog/2010/06/11/friday-algorithms-quicksort-difference-between-php-and-javascript/
 //
 function quicksort(arr)
 {
@@ -545,7 +549,46 @@ function quicksort(arr)
     }
     return quicksort(left).concat(pivot, quicksort(right));
 }
+//----------------------------------------------------------------------------
+//
+//  MergeSort Sort Algorithm
+//  From http://www.stoimen.com/blog/2010/07/02/friday-algorithms-javascript-merge-sort/
+//
+//  -If the list is of length 0 or 1, then it is already sorted. Otherwise:
+//  -Divide the unsorted list into two sublists of about half the size.
+//  -Sort each sublist recursively by re-applying merge sort.
+//  -Merge the two sublists back into one sorted list.
+function mergeSort(arr)
+{
+    if (arr.length < 2)
+        return arr;
 
+    var middle = parseInt(arr.length / 2);
+    var left   = arr.slice(0, middle);
+    var right  = arr.slice(middle, arr.length);
+
+    return merge(mergeSort(left), mergeSort(right));
+}
+function merge(left, right)
+{
+    var result = [];
+
+    while (left.length && right.length) {
+        if (left[0] <= right[0]) {
+            result.push(left.shift());
+        } else {
+            result.push(right.shift());
+        }
+    }
+
+    while (left.length)
+        result.push(left.shift());
+
+    while (right.length)
+        result.push(right.shift());
+
+    return result;
+}
 
 //----------------------------------------------------------------------------
 //
@@ -605,12 +648,38 @@ function setEventListeners( canvas ){
         }
     });
 
-
     // Button events
     document.getElementById("startSort").onclick = function(){
-        var text = document.getElementById("inputNumbers").textContent;
+        var text = document.getElementById("inputNumbers").value;
         numberList = text.split(',');
-        alert(numberList);
+
+        // Draw Scene and Models
+        tick();
+
+        // Reset time
+        globalAlgTime = new Date().getTime();
+
+        var result = "";
+        // Run Selected Algorithm
+        switch (algorithmType) {
+            case 0: bubbleSort(numberList);
+                result = "BubbleSort: "
+                break;
+            case 1: numberList = quicksort(numberList);
+                result = "QuickSort: "
+                break;
+            case 2: numberList = mergeSort(numberList);
+                result = "MergeSort: "
+                break;
+        }
+        var timenow = new Date().getTime();
+        var timeElapsed = (timenow - globalAlgTime)/1000; // seconds
+
+        // Add result into multiple area for output
+        document.getElementById("countedTime").appendChild(new Option(result+timeElapsed));
+
+        //alert(timeElapsed);
+        //alert(algorithmType);
     };
     document.getElementById("XX-on-off-button").onclick = function(){
         // Switching on / off
@@ -686,13 +755,13 @@ function setEventListeners( canvas ){
         angleXX = 0.0;
         angleYY = 0.0;
         angleZZ = 0.0;
-        sx = 0.1;
-        sy = 0.1;
-        sz = 0.1;
+        sx = 0.05;
+        sy = 0.05;
+        sz = 0.05;
         rotationXX_ON = 0;
         rotationXX_DIR = 1;
         rotationXX_SPEED = 1;
-        rotationYY_ON = 0;
+        rotationYY_ON = 1;
         rotationYY_DIR = 1;
         rotationYY_SPEED = 1;
         rotationZZ_ON = 0;
@@ -737,6 +806,6 @@ function runWebGL() {
     setEventListeners( canvas );
     initBuffers();
     initTexture();
-    tick();     // A timer controls the rendering / animation
+    //tick();     // A timer controls the rendering / animation
     outputInfos();
 }
