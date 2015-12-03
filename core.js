@@ -159,14 +159,20 @@ var algorithmType = 0;
 var numberList = [];
 // Algorithm time
 var globalAlgTime = 0;
+// Result
+var result = "";
 // Cubes to Move Up
 var cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+var cubeToMv = [0, 1];
 // yy position for cubes
-var yy= 0.5;
+var yy = 0.5;
+var toYY = 0.5;
 // If is to go up or not
 var goUp = 0;
 // If is to go down or not
 var goDown = 0;
+// repeat sort algorithm
+var goAgain = 1;
 
 //----------------------------------------------------------------------------
 //
@@ -417,7 +423,6 @@ function drawScene() {
                 mvMatrix, primitiveType, numberList[i]);
         }
         offset -= 0.22;
-        cubesToMove[i] = 0;
     }
 
 }
@@ -444,12 +449,12 @@ function animate() {
             angleZZ += rotationZZ_DIR * rotationZZ_SPEED * (90 * elapsed) / 1000.0;
         }
         // Move blocks Up
-        if(yy > 0.5 && ty <= yy && goUp && !goDown) {
-            ty += 0.003;
+        if(yy <= toYY && ty <= yy && goUp) {
+            yy += 0.003;
         }
         // Move blocks Down
-        if(yy > 0.5 && yy >= ty && !goUp && goDown) {
-            ty -= 0.003;
+        if(yy >= toYY && ty >= yy && goDown) {
+            yy -= 0.003;
         }
     }
     lastTime = timeNow;
@@ -544,6 +549,30 @@ function tick() {
     handleKeys();
     drawScene();
     animate();
+
+    if(goAgain) {
+        // Run Selected Algorithm
+        switch (algorithmType) {
+            case 0:
+                bubbleSort(numberList);
+                result = "BubbleSort: "
+                break;
+            case 1:
+                numberList = quicksort(numberList);
+                result = "QuickSort: "
+                break;
+            case 2:
+                numberList = mergeSort(numberList);
+                result = "MergeSort: "
+                break;
+        }
+    } else {
+        var timenow = new Date().getTime();
+        var timeElapsed = (timenow - globalAlgTime)/1000; // seconds
+
+        // Add result into multiple area for output
+        document.getElementById("countedTime").appendChild(new Option(result+timeElapsed));
+    }
 }
 
 //function sleep(milliseconds) {
@@ -559,14 +588,14 @@ function tick() {
 //  Moving cubes
 function moveCubesUpDown(a, b, updown) {
     if (updown) { // Up
-        yy = 0.7;
+        toYY = 0.7;
         // Moving Up Cubes
         cubesToMove[a] = 1;
         cubesToMove[b] = 1;
         goUp = 1;
         goDown = 0;
     } else { // Down
-        yy = 0.5;
+        toYY = 0.5;
         // Moving Down Cubes
         cubesToMove[a] = 0;
         cubesToMove[b] = 0;
@@ -581,37 +610,36 @@ function moveCubesUpDown(a, b, updown) {
 //  Bubble Sort Algorithm
 //  From http://www.stoimen.com/blog/2010/07/09/friday-algorithms-javascript-bubble-sort/
 //
+var troca = 0;
+var animTimeInit = 0;
+var animTime = 1000;
 function bubbleSort(a)
 {
     var swapped;
-    var repetir = 0;
     do {
         swapped = false;
         for (var i=0; i < a.length-1; i++) {
-            if(!goUp && !goDown)
-                moveCubesUpDown(i, i+1, 1);
-            if(!goUp && goDown)
-                moveCubesUpDown(i, i+1, 1);
+            if (a[i] > a[i+1]) {
+                var tmp = new Date().getTime();
+                if(!troca) {
+                    animTimeInit = new Date().getTime();
+                    troca = 1; // activate anim
+                    goAgain = 1;
+                    moveCubesUpDown(i, i+1, 1);
+                } else if(troca && (tmp-animTimeInit) >= animTime) {
+                    troca = 0; // deactivate anim
+                    goAgain = 0;
+                    moveCubesUpDown(i, i+1, 0);
 
-            if(ty!=yy) { // going up or down
-                repetir = true;
-                //break;
-            }
-            if(ty>=yy) {
-                moveCubesUpDown(i, i + 1, 0);
-                repetir = false;
-
-                if (a[i] > a[i+1]) {
-                    // mudar o webGLTextures apenas deve chegar
                     var temp = a[i];
                     a[i] = a[i+1];
                     a[i+1] = temp;
                     swapped = true;
                 }
-            }
 
+            }
         }
-    } while (swapped && repetir);
+    } while (swapped);
 }
 //----------------------------------------------------------------------------
 //
@@ -740,30 +768,27 @@ function setEventListeners( canvas ){
         var text = document.getElementById("inputNumbers").value;
         numberList = text.split(',');
 
-        // Draw Scene and Models
-        tick();
-
         // Reset time
         globalAlgTime = new Date().getTime();
 
-        var result = "";
-        // Run Selected Algorithm
-        switch (algorithmType) {
-            case 0: bubbleSort(numberList);
-                result = "BubbleSort: "
-                break;
-            case 1: numberList = quicksort(numberList);
-                result = "QuickSort: "
-                break;
-            case 2: numberList = mergeSort(numberList);
-                result = "MergeSort: "
-                break;
-        }
-        var timenow = new Date().getTime();
-        var timeElapsed = (timenow - globalAlgTime)/1000; // seconds
+        // Draw Scene and Models
+        tick();
 
-        // Add result into multiple area for output
-        document.getElementById("countedTime").appendChild(new Option(result+timeElapsed));
+        //// Run Selected Algorithm
+        //switch (algorithmType) {
+        //    case 0: bubbleSort(numberList);
+        //        result = "BubbleSort: "
+        //        break;
+        //    case 1: numberList = quicksort(numberList);
+        //        result = "QuickSort: "
+        //        break;
+        //    case 2: numberList = mergeSort(numberList);
+        //        result = "MergeSort: "
+        //        break;
+        //}
+
+
+
 
         //alert(timeElapsed);
         //alert(algorithmType);
