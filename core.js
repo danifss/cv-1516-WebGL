@@ -159,6 +159,14 @@ var algorithmType = 0;
 var numberList = [];
 // Algorithm time
 var globalAlgTime = 0;
+// Cubes to Move Up
+var cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+// yy position for cubes
+var yy= 0.5;
+// If is to go up or not
+var goUp = 0;
+// If is to go down or not
+var goDown = 0;
 
 //----------------------------------------------------------------------------
 //
@@ -318,13 +326,57 @@ function drawModel( angleXX, angleYY, angleZZ,
 
 //  Drawing the 3D scene
 
+//function drawScene() {
+//    var pMatrix;
+//    var mvMatrix = mat4();
+//
+//    // Clearing with the background color
+//    gl.clear(gl.COLOR_BUFFER_BIT);
+//
+//    // --- Computing the Projection Matrix
+//    if( projectionType == 0 ) {
+//        // For now, the default orthogonal view volume
+//        pMatrix = ortho( -1.0, 1.0, -1.0, 1.0, -1.0, 1.0 );
+//        tz = 0;
+//        // TO BE DONE IF NEEDED !
+//        // Allow the user to control the size of the view volume
+//    }
+//    else {
+//        // A standard view volume.
+//        // Viewer is at (0,0,0)
+//        // Ensure that the model is "inside" the view volume
+//        pMatrix = perspective( 45, 1, 0.05, 10 );
+//        tz = -2.25;
+//    }
+//
+//    // Passing the Projection Matrix to apply the current projection
+//    var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+//    gl.uniformMatrix4fv(pUniform, false, new Float32Array(flatten(pMatrix)));
+//
+//    // --- Instantianting the same model more than once !!
+//    // And with diferent transformation parameters !!
+//    // Call the drawModel function !!
+//    var offset = 0.9;
+//    for(var i=0; i<numberList.length; i++) {
+//        // Instance i models
+//        cubesToMove[i] = drawModel( angleXX, angleYY, angleZZ,  // CW rotations
+//            sx, sy, sz,
+//            tx - offset, ty, tz,
+//            mvMatrix,
+//            primitiveType,
+//            numberList[i]);
+//        offset -= 0.22;
+//    }
+//}
+
+//  Drawing the 3D scene with modified positions
 function drawScene() {
     var pMatrix;
     var mvMatrix = mat4();
 
     // Clearing with the background color
     gl.clear(gl.COLOR_BUFFER_BIT);
-    
+
     // --- Computing the Projection Matrix
     if( projectionType == 0 ) {
         // For now, the default orthogonal view volume
@@ -333,60 +385,41 @@ function drawScene() {
         // TO BE DONE IF NEEDED !
         // Allow the user to control the size of the view volume
     }
-    else {  
+    else {
         // A standard view volume.
         // Viewer is at (0,0,0)
         // Ensure that the model is "inside" the view volume
         pMatrix = perspective( 45, 1, 0.05, 10 );
         tz = -2.25;
     }
-    
+
     // Passing the Projection Matrix to apply the current projection
     var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     gl.uniformMatrix4fv(pUniform, false, new Float32Array(flatten(pMatrix)));
-    
+
     // --- Instantianting the same model more than once !!
     // And with diferent transformation parameters !!
     // Call the drawModel function !!
     var offset = 0.9;
     for(var i=0; i<numberList.length; i++) {
-        // Instance i models
-        drawModel( angleXX, angleYY, angleZZ,  // CW rotations
-            sx, sy, sz,
-            tx - offset, ty, tz,
-            mvMatrix,
-            primitiveType,
-            numberList[i]);
+        if (cubesToMove[i] == 0){
+            // Instance models
+            drawModel( angleXX, angleYY, angleZZ,  // CW rotations
+                sx, sy, sz,
+                tx - offset, ty, tz,
+                mvMatrix,
+                primitiveType,
+                numberList[i]);
+        } else { // draw model with diferent params
+            drawModel(angleXX, angleYY, angleZZ,
+                sx, sy, sz,
+                tx - offset, yy, tz,
+                mvMatrix, primitiveType, numberList[i]);
+        }
         offset -= 0.22;
+        cubesToMove[i] = 0;
     }
 
-    //// Instance 1 --- RIGHT TOP
-    //drawModel( -angleXX, angleYY, angleZZ,
-    //           sx, sy, sz,
-    //           tx + 0.5, ty + 0.5, tz,
-    //           mvMatrix,
-    //           primitiveType );
-    //
-    //// Instance 2 --- LEFT TOP
-    //drawModel( -angleXX, -angleYY, -angleZZ,  // CW rotations
-    //           sx, sy, sz,
-    //           tx - 0.5, ty + 0.5, tz,
-    //           mvMatrix,
-    //           primitiveType );
-    //
-    //// Instance 3 --- LEFT BOTTOM
-    //drawModel( angleXX, angleYY, -angleZZ,
-    //           sx, sy, sz,
-    //           tx + 0.5, ty - 0.5, tz,
-    //           mvMatrix,
-    //           primitiveType );
-    //
-    //// Instance 4 --- RIGHT BOTTOM
-    //drawModel( angleXX, -angleYY, angleZZ,  // CW rotations
-    //           sx, sy, sz,
-    //           tx - 0.5, ty - 0.5, tz,
-    //           mvMatrix,
-    //           primitiveType );
 }
 
 //----------------------------------------------------------------------------
@@ -409,6 +442,14 @@ function animate() {
         }
         if( rotationZZ_ON ) {
             angleZZ += rotationZZ_DIR * rotationZZ_SPEED * (90 * elapsed) / 1000.0;
+        }
+        // Move blocks Up
+        if(yy > 0.5 && ty <= yy && goUp && !goDown) {
+            ty += 0.003;
+        }
+        // Move blocks Down
+        if(yy > 0.5 && yy >= ty && !goUp && goDown) {
+            ty -= 0.003;
         }
     }
     lastTime = timeNow;
@@ -498,11 +539,40 @@ function handleMouseMove(event) {
 // Timer
 
 function tick() {
-    //requestAnimFrame(tick);
+    requestAnimFrame(tick);
     // Processing keyboard events
     handleKeys();
     drawScene();
     animate();
+}
+
+//function sleep(milliseconds) {
+//    var start = new Date().getTime();
+//    for (var i = 0; i < 1e7; i++) {
+//        if ((new Date().getTime() - start) > milliseconds){
+//            break;
+//        }
+//    }
+//}
+
+//----------------------------------------------------------------------------
+//  Moving cubes
+function moveCubesUpDown(a, b, updown) {
+    if (updown) { // Up
+        yy = 0.7;
+        // Moving Up Cubes
+        cubesToMove[a] = 1;
+        cubesToMove[b] = 1;
+        goUp = 1;
+        goDown = 0;
+    } else { // Down
+        yy = 0.5;
+        // Moving Down Cubes
+        cubesToMove[a] = 0;
+        cubesToMove[b] = 0;
+        goUp = 0;
+        goDown = 1;
+    }
 }
 
 
@@ -514,17 +584,34 @@ function tick() {
 function bubbleSort(a)
 {
     var swapped;
+    var repetir = 0;
     do {
         swapped = false;
         for (var i=0; i < a.length-1; i++) {
-            if (a[i] > a[i+1]) {
-                var temp = a[i];
-                a[i] = a[i+1];
-                a[i+1] = temp;
-                swapped = true;
+            if(!goUp && !goDown)
+                moveCubesUpDown(i, i+1, 1);
+            if(!goUp && goDown)
+                moveCubesUpDown(i, i+1, 1);
+
+            if(ty!=yy) { // going up or down
+                repetir = true;
+                //break;
             }
+            if(ty>=yy) {
+                moveCubesUpDown(i, i + 1, 0);
+                repetir = false;
+
+                if (a[i] > a[i+1]) {
+                    // mudar o webGLTextures apenas deve chegar
+                    var temp = a[i];
+                    a[i] = a[i+1];
+                    a[i+1] = temp;
+                    swapped = true;
+                }
+            }
+
         }
-    } while (swapped);
+    } while (swapped && repetir);
 }
 //----------------------------------------------------------------------------
 //
