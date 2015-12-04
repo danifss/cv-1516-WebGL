@@ -33,6 +33,11 @@
         }
     </script>
 
+    <script>
+        function changeColor() {
+            document.getElementById("XX-on-off-button").addClass("btn btn-success disable");
+        }
+    </script>
     <!-- The JS files -->
     <!-- Some useful functions for browser compatibility -->
     <script type="text/javascript" src="webgl-utils.js"></script>
@@ -76,19 +81,19 @@
     <div class="row" style="margin:50px 5px;">
 
         <div class="row">
-            <div class="col-xs-1">
+            <!--<div class="col-xs-1">-->
 
-            </div>
+            <!--</div>-->
             <div class="col-xs-3" align="middle">
                 <br><br>
                 <div class="row">
                     <div class="col-xs-12">
-                        <p>Choose the <b><u>algorithm</u></b> to sort:
-                            <select id="algorithm-selection">
+                        <p>Choose the <u><b>algorithm</b></u> to sort:
+                            <select class="form-control" id="algorithm-selection">
                                 <option value="0">Bubble Sort</option>
                                 <option value="1">Quick Sort</option>
                                 <option value="2">Merge Sort</option>
-                                <option value="3">...</option>
+                                <option value="3">Default</option>
                             </select>
                         </p>
                     </div>
@@ -96,8 +101,11 @@
                 <br>
                 <div class="row">
                     <div class="col-md-12">
-                        <p><b>Order of Cubes numbers from 1 to 9</b>&nbsp;(ex.: 1,5,4,7,6,...)
-                            <input class="form-control" id="inputNumbers" type="text" placeholder="insert numbers here"/>
+                        <p><b>Order of cubes numbers from 1 to 9</b>&nbsp;<p>(ex.: 1,5,4,7,6,8,3,9)</p>
+                            <input class="form-control" id="inputNumbers" type="text" maxlength="17"
+                                   onkeypress="if(this.value.match(/[^0-9|,]/)) this.value=this.value.replace(/[^0-9|,]/g,'')"
+                                   onkeyup="if(this.value.match(/[^0-9|,]/)) this.value=this.value.replace(/[^0-9|,]/g,'')"
+                                   placeholder="insert numbers here"/>
                         </p>
                     </div>
                 </div>
@@ -119,16 +127,16 @@
                 </div>
             </div>
 
-            <div class="col-xs-4" align="middle">
-                <canvas id="my-canvas" style="border:1px solid #000000;" width="400" height="400"></canvas>
+            <div class="col-xs-6" align="middle">
+                <canvas id="my-canvas" style="border:1px solid #000000;" width="500" height="500"></canvas>
             </div>
 
             <div class="col-xs-3" align="middle">
                 <div class="row">
                     <br><br>
-                    <div class="col-xs-4">
-                        <p>Model XX rotation:
-                            <button class="btn btn-xs btn-success" id="XX-on-off-button">On / Off</button>
+                    <div class="col-xs-4" id="selector">
+                            <p>Model XX rotation:
+                            <button class="btn btn-xs btn-success" id="XX-on-off-button">On</button>
                             <p></p>
                             <button class="btn btn-xs btn-default" id="XX-direction-button">Direction</button>
                             <p></p>
@@ -139,7 +147,7 @@
                     </div>
                     <div class="col-xs-4">
                         <p>Model YY rotation:
-                            <button class="btn btn-xs btn-success" id="YY-on-off-button">On / Off</button>
+                            <button class="btn btn-xs btn-success" id="YY-on-off-button">On</button>
                             <p></p>
                             <button class="btn btn-xs btn-default" id="YY-direction-button">Direction</button>
                             <p></p>
@@ -150,7 +158,7 @@
                     </div>
                     <div class="col-xs-4">
                         <p>Model ZZ rotation:
-                            <button class="btn btn-xs btn-success" id="ZZ-on-off-button">On / Off</button>
+                            <button class="btn btn-xs btn-danger" id="ZZ-on-off-button">Off</button>
                             <p></p>
                             <button class="btn btn-xs btn-default" id="ZZ-direction-button">Direction</button>
                             <p></p>
@@ -165,7 +173,7 @@
                     <div class="col-xs-12">
                         <p></p>
                         </p><p>Choose the <b>projection type</b>:
-                            <select id="projection-selection">
+                            <select class="form-control" id="projection-selection">
                                 <option value="0">Orthogonal Projection</option>
                                 <option value="1">Perspective Projection</option>
                             </select>

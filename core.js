@@ -797,8 +797,12 @@ function setEventListeners( canvas ){
         // Switching on / off
         if( rotationXX_ON ) {
             rotationXX_ON = 0;
+            this.className="btn btn-xs btn-danger";
+            this.innerHTML="Off";
         } else {
             rotationXX_ON = 1;
+            this.className="btn btn-xs btn-success";
+            this.innerHTML="On";
         }
     };
     document.getElementById("XX-direction-button").onclick = function(){
@@ -819,8 +823,12 @@ function setEventListeners( canvas ){
         // Switching on / off
         if( rotationYY_ON ) {
             rotationYY_ON = 0;
+            this.className="btn btn-xs btn-danger"
+            this.innerHTML="Off";
         } else {
             rotationYY_ON = 1;
+            this.className="btn btn-xs btn-success"
+            this.innerHTML="On";
         }
     };
     document.getElementById("YY-direction-button").onclick = function(){
@@ -841,8 +849,12 @@ function setEventListeners( canvas ){
         // Switching on / off
         if( rotationZZ_ON ) {
             rotationZZ_ON = 0;
+            this.className="btn btn-xs btn-danger";
+            this.innerHTML="Off";
         } else {
             rotationZZ_ON = 1;
+            this.className="btn btn-xs btn-success";
+            this.innerHTML="On";
         }
     };
     document.getElementById("ZZ-direction-button").onclick = function(){
