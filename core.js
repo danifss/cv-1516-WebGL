@@ -173,6 +173,8 @@ var goUp = 0;
 var goDown = 0;
 // repeat sort algorithm
 var goAgain = 1;
+// Finished sorting
+var doneSort = 0;
 
 //----------------------------------------------------------------------------
 //
@@ -448,17 +450,38 @@ function animate() {
         if( rotationZZ_ON ) {
             angleZZ += rotationZZ_DIR * rotationZZ_SPEED * (90 * elapsed) / 1000.0;
         }
-        // Move blocks Up
-        if(yy <= toYY && ty <= yy && goUp) {
-            yy += 0.003;
-        }
-        // Move blocks Down
-        if(yy >= toYY && ty >= yy && goDown) {
-            yy -= 0.003;
+        //// Move blocks Up
+        //if(yy <= toYY && ty <= yy && goUp && !goDown) {
+        //    yy += 0.003;
+        //}
+        //// Move blocks Down
+        //if(yy >= toYY && ty >= yy && goDown && !goUp) {
+        //    yy -= 0.003;
+        //}
+
+        if(goUp){ // Move blocks Up
+            if(yy <= toYY) {
+                yy += 0.003;
+            }
+        } else if(goDown) { // Move blocks Down
+            if(yy >= toYY) {
+                yy -= 0.003;
+            }
         }
     }
     lastTime = timeNow;
 }
+
+var animTimeInit = 0;
+var animTime = 500; // ms
+var animDone = 0;
+//function controlAnimation() {
+//    var tmp = new Date().getTime();
+//    var elapsed = (tmp-animTimeInit);
+//    animDone = 0;
+//    if (elapsed >= animTime)
+//        animDone = 1;
+//}
 
 //----------------------------------------------------------------------------
 
@@ -550,6 +573,8 @@ function tick() {
     drawScene();
     animate();
 
+    //controlAnimation();
+
     if(goAgain) {
         // Run Selected Algorithm
         switch (algorithmType) {
@@ -567,11 +592,13 @@ function tick() {
                 break;
         }
     } else {
-        var timenow = new Date().getTime();
-        var timeElapsed = (timenow - globalAlgTime)/1000; // seconds
+        if(!cubesToMove.indexOf(1)) {
+            var timenow = new Date().getTime();
+            var timeElapsed = (timenow - globalAlgTime) / 1000; // seconds
 
-        // Add result into multiple area for output
-        document.getElementById("countedTime").appendChild(new Option(result+timeElapsed));
+            // Add result into multiple area for output
+            document.getElementById("countedTime").appendChild(new Option(result + timeElapsed));
+        }
     }
 }
 
@@ -595,10 +622,10 @@ function moveCubesUpDown(a, b, updown) {
         goUp = 1;
         goDown = 0;
     } else { // Down
-        toYY = 0.5;
+        toYY = 0;
         // Moving Down Cubes
-        cubesToMove[a] = 0;
-        cubesToMove[b] = 0;
+        cubesToMove[a] = -1;
+        cubesToMove[b] = -1;
         goUp = 0;
         goDown = 1;
     }
@@ -610,25 +637,32 @@ function moveCubesUpDown(a, b, updown) {
 //  Bubble Sort Algorithm
 //  From http://www.stoimen.com/blog/2010/07/09/friday-algorithms-javascript-bubble-sort/
 //
-var troca = 0;
-var animTimeInit = 0;
-var animTime = 1000;
+var troca = 1;
+
 function bubbleSort(a)
 {
     var swapped;
     do {
         swapped = false;
         for (var i=0; i < a.length-1; i++) {
+
+            var tmp = new Date().getTime();
+            animDone = (tmp-animTimeInit) >= animTime;
+
             if (a[i] > a[i+1]) {
-                var tmp = new Date().getTime();
-                if(!troca) {
+
+                if(!troca && animDone) {
                     animTimeInit = new Date().getTime();
                     troca = 1; // activate anim
                     goAgain = 1;
+                    cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
                     moveCubesUpDown(i, i+1, 1);
-                } else if(troca && (tmp-animTimeInit) >= animTime) {
+                }
+                else if(troca && animDone)
+                {
                     troca = 0; // deactivate anim
                     goAgain = 0;
+                    cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
                     moveCubesUpDown(i, i+1, 0);
 
                     var temp = a[i];
@@ -636,8 +670,18 @@ function bubbleSort(a)
                     a[i+1] = temp;
                     swapped = true;
                 }
-
             }
+            else
+            {
+                if(!troca) {
+                    animTimeInit = new Date().getTime();
+                    troca = 1; // activate anim
+                    goAgain = 1;
+                    cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    moveCubesUpDown(i, i+1, 1);
+                }
+            }
+
         }
     } while (swapped);
 }
