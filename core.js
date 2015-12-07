@@ -566,6 +566,8 @@ function handleMouseMove(event) {
 
 // Timer
 
+var sortDone = 0;
+
 function tick() {
     requestAnimFrame(tick);
     // Processing keyboard events
@@ -592,12 +594,14 @@ function tick() {
                 break;
         }
     } else {
-        if(!cubesToMove.indexOf(1)) {
-            var timenow = new Date().getTime();
-            var timeElapsed = (timenow - globalAlgTime) / 1000; // seconds
+        if(!sortDone) {
+        var timenow = new Date().getTime();
+        var timeElapsed = (timenow - globalAlgTime) / 1000; // seconds
+        sortDone = 1;
 
-            // Add result into multiple area for output
-            document.getElementById("countedTime").appendChild(new Option(result + timeElapsed));
+        // Add result into multiple area for output
+        document.getElementById("countedTime").appendChild(new Option(result + timeElapsed));
+
         }
     }
 }
@@ -614,6 +618,8 @@ function tick() {
 //----------------------------------------------------------------------------
 //  Moving cubes
 function moveCubesUpDown(a, b, updown) {
+    cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
     if (updown) { // Up
         toYY = 0.7;
         // Moving Up Cubes
@@ -649,38 +655,47 @@ function bubbleSort(a)
             var tmp = new Date().getTime();
             animDone = (tmp-animTimeInit) >= animTime;
 
-            if (a[i] > a[i+1]) {
+            if (animDone) {
+                if (a[i] > a[i + 1]) {
 
-                if(!troca && animDone) {
-                    animTimeInit = new Date().getTime();
-                    troca = 1; // activate anim
-                    goAgain = 1;
-                    cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    moveCubesUpDown(i, i+1, 1);
-                }
-                else if(troca && animDone)
-                {
-                    troca = 0; // deactivate anim
-                    goAgain = 0;
-                    cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    moveCubesUpDown(i, i+1, 0);
+                    if (!troca) {
+                        animTimeInit = new Date().getTime();
+                        troca = 1;
+                        goAgain = 1;
+                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                        moveCubesUpDown(i, i + 1, 1);
+                    }
+                    else{
+                        var temp = a[i];
+                        a[i] = a[i + 1];
+                        a[i + 1] = temp;
+                        swapped = true;
 
-                    var temp = a[i];
-                    a[i] = a[i+1];
-                    a[i+1] = temp;
-                    swapped = true;
+                        animTimeInit = new Date().getTime();
+                        troca = 0;
+                        goAgain = 0;
+                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                        moveCubesUpDown(i, i + 1, 0);
+
+                    }
                 }
-            }
-            else
-            {
-                if(!troca) {
-                    animTimeInit = new Date().getTime();
-                    troca = 1; // activate anim
-                    goAgain = 1;
-                    cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    moveCubesUpDown(i, i+1, 1);
+                else {
+                    if (!troca) {
+                        animTimeInit = new Date().getTime();
+                        troca = 1; // activate anim
+                        goAgain = 1;
+                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                        moveCubesUpDown(i, i + 1, 1);
+                    }
+                    else if (animDone) {
+                        troca = 1;
+                        goAgain = 0;
+                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                        moveCubesUpDown(i, i + 1, 0);
+                    }
                 }
-            }
+            } else
+                goAgain = 1;
 
         }
     } while (swapped);
