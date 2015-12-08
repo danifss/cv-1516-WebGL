@@ -6,7 +6,9 @@
 //
 //  Adapted from learningwebgl.com
 //
-//  J. Madeira - November 2015
+//  Daniel Silva - 51908
+//  João Cravo   - 63784
+//  December 2015
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -331,52 +333,8 @@ function drawModel( angleXX, angleYY, angleZZ,
 
 //----------------------------------------------------------------------------
 
-//  Drawing the 3D scene
-
-//function drawScene() {
-//    var pMatrix;
-//    var mvMatrix = mat4();
-//
-//    // Clearing with the background color
-//    gl.clear(gl.COLOR_BUFFER_BIT);
-//
-//    // --- Computing the Projection Matrix
-//    if( projectionType == 0 ) {
-//        // For now, the default orthogonal view volume
-//        pMatrix = ortho( -1.0, 1.0, -1.0, 1.0, -1.0, 1.0 );
-//        tz = 0;
-//        // TO BE DONE IF NEEDED !
-//        // Allow the user to control the size of the view volume
-//    }
-//    else {
-//        // A standard view volume.
-//        // Viewer is at (0,0,0)
-//        // Ensure that the model is "inside" the view volume
-//        pMatrix = perspective( 45, 1, 0.05, 10 );
-//        tz = -2.25;
-//    }
-//
-//    // Passing the Projection Matrix to apply the current projection
-//    var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-//    gl.uniformMatrix4fv(pUniform, false, new Float32Array(flatten(pMatrix)));
-//
-//    // --- Instantianting the same model more than once !!
-//    // And with diferent transformation parameters !!
-//    // Call the drawModel function !!
-//    var offset = 0.9;
-//    for(var i=0; i<numberList.length; i++) {
-//        // Instance i models
-//        cubesToMove[i] = drawModel( angleXX, angleYY, angleZZ,  // CW rotations
-//            sx, sy, sz,
-//            tx - offset, ty, tz,
-//            mvMatrix,
-//            primitiveType,
-//            numberList[i]);
-//        offset -= 0.22;
-//    }
-//}
-
 //  Drawing the 3D scene with modified positions
+
 function drawScene() {
     var pMatrix;
     var mvMatrix = mat4();
@@ -745,7 +703,6 @@ function quicksort(vet, esq, dir){
                 cd--;
             }
         }
-
 
         if (cd > esq)
             quicksort(vet, esq, cd);
