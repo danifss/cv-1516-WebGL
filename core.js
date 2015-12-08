@@ -163,7 +163,6 @@ var globalAlgTime = 0;
 var result = "";
 // Cubes to Move Up
 var cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-var cubeToMv = [0, 1];
 // yy position for cubes
 var yy = 0.5;
 var toYY = 0.5;
@@ -174,7 +173,7 @@ var goDown = 0;
 // repeat sort algorithm
 var goAgain = 1;
 // Finished sorting
-var doneSort = 0;
+var sortDone = 0;
 
 //----------------------------------------------------------------------------
 //
@@ -450,15 +449,8 @@ function animate() {
         if( rotationZZ_ON ) {
             angleZZ += rotationZZ_DIR * rotationZZ_SPEED * (90 * elapsed) / 1000.0;
         }
-        //// Move blocks Up
-        //if(yy <= toYY && ty <= yy && goUp && !goDown) {
-        //    yy += 0.003;
-        //}
-        //// Move blocks Down
-        //if(yy >= toYY && ty >= yy && goDown && !goUp) {
-        //    yy -= 0.003;
-        //}
 
+        // Animation for sort
         if(goUp){ // Move blocks Up
             if(yy <= toYY) {
                 yy += 0.003;
@@ -473,7 +465,7 @@ function animate() {
 }
 
 var animTimeInit = 0;
-var animTime = 500; // ms
+var animTime = 3000; // ms
 var animDone = 0;
 //function controlAnimation() {
 //    var tmp = new Date().getTime();
@@ -566,8 +558,6 @@ function handleMouseMove(event) {
 
 // Timer
 
-var sortDone = 0;
-
 function tick() {
     requestAnimFrame(tick);
     // Processing keyboard events
@@ -585,7 +575,7 @@ function tick() {
                 result = "BubbleSort: "
                 break;
             case 1:
-                numberList = quicksort(numberList);
+                quicksort(numberList, 0, numberList.length-1);
                 result = "QuickSort: "
                 break;
             case 2:
@@ -594,14 +584,13 @@ function tick() {
                 break;
         }
     } else {
-        if(!sortDone) {
-        var timenow = new Date().getTime();
-        var timeElapsed = (timenow - globalAlgTime) / 1000; // seconds
-        sortDone = 1;
+        if(!sortDone && animDone) {
+            var timenow = new Date().getTime();
+            var timeElapsed = (timenow - globalAlgTime) / 1000; // seconds
+            sortDone = 1;
 
-        // Add result into multiple area for output
-        document.getElementById("countedTime").appendChild(new Option(result + timeElapsed));
-
+            // Add result into multiple area for output
+            document.getElementById("countedTime").appendChild(new Option(result + timeElapsed));
         }
     }
 }
@@ -644,6 +633,7 @@ function moveCubesUpDown(a, b, updown) {
 //  From http://www.stoimen.com/blog/2010/07/09/friday-algorithms-javascript-bubble-sort/
 //
 var troca = 1;
+var emCima = 0;
 
 function bubbleSort(a)
 {
@@ -658,45 +648,42 @@ function bubbleSort(a)
             if (animDone) {
                 if (a[i] > a[i + 1]) {
 
-                    if (!troca) {
+                    if (!emCima) {
                         animTimeInit = new Date().getTime();
-                        troca = 1;
+                        emCima = 1;
                         goAgain = 1;
-                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
                         moveCubesUpDown(i, i + 1, 1);
                     }
                     else{
+
                         var temp = a[i];
                         a[i] = a[i + 1];
                         a[i + 1] = temp;
                         swapped = true;
 
                         animTimeInit = new Date().getTime();
-                        troca = 0;
+                        emCima = 0;
                         goAgain = 0;
-                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
                         moveCubesUpDown(i, i + 1, 0);
-
                     }
                 }
                 else {
-                    if (!troca) {
+                    if (!emCima) {
                         animTimeInit = new Date().getTime();
-                        troca = 1; // activate anim
+                        emCima = 1; // activate anim
                         goAgain = 1;
-                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
                         moveCubesUpDown(i, i + 1, 1);
                     }
-                    else if (animDone) {
-                        troca = 1;
+                    else
+                    {
+                        emCima = 1;
                         goAgain = 0;
-                        cubesToMove = [0, 0, 0, 0, 0, 0, 0, 0, 0];
                         moveCubesUpDown(i, i + 1, 0);
                     }
                 }
-            } else
+            } else {
                 goAgain = 1;
-
+            }
         }
     } while (swapped);
 }
@@ -705,23 +692,68 @@ function bubbleSort(a)
 //  QuickSort Sort Algorithm
 //  From http://www.stoimen.com/blog/2010/06/11/friday-algorithms-quicksort-difference-between-php-and-javascript/
 //
-function quicksort(arr)
-{
-    if (arr.length == 0)
-        return [];
+//function quicksort(arr)
+//{
+//    if (arr.length == 0)
+//        return [];
+//
+//    var left = new Array();
+//    var right = new Array();
+//    var pivot = arr[0];
+//
+//    for (var i = 1; i < arr.length; i++) {
+//        if (arr[i] < pivot) {
+//            left.push(arr[i]);
+//        } else {
+//            right.push(arr[i]);
+//        }
+//    }
+//    return quicksort(left).concat(pivot, quicksort(right));
+//}
 
-    var left = new Array();
-    var right = new Array();
-    var pivot = arr[0];
+//----------------------------------------------------------------------------
+//  QuickSort Sort Algorithm
+//  From https://pt.wikipedia.org/wiki/Quicksort#JavaScript
 
-    for (var i = 1; i < arr.length; i++) {
-        if (arr[i] < pivot) {
-            left.push(arr[i]);
-        } else {
-            right.push(arr[i]);
+function quicksort(vet, esq, dir){
+    var ce = esq;
+    var cd = dir;
+    var meio = parseInt((ce + cd)/ 2);
+
+    var tmp = new Date().getTime();
+    animDone = (tmp-animTimeInit) >= animTime;
+
+    if (animDone) {
+
+        while (ce < cd) {
+            while (vet[ce] < vet[meio]) {
+                ce++;
+            }
+            while (vet[cd] > vet[meio]) {
+                cd--;
+            }
+            if (ce <= cd) {
+
+                animTimeInit = new Date().getTime();
+                goAgain = 1;
+                moveCubesUpDown(ce, cd, 1);
+
+                var temp = vet[ce];
+                vet[ce] = vet[cd];
+                vet[cd] = temp;
+                ce++;
+                cd--;
+            }
         }
+
+
+        if (cd > esq)
+            quicksort(vet, esq, cd);
+
+        if (ce < dir)
+            quicksort(vet, ce, dir);
     }
-    return quicksort(left).concat(pivot, quicksort(right));
+
 }
 //----------------------------------------------------------------------------
 //
@@ -827,30 +859,16 @@ function setEventListeners( canvas ){
         var text = document.getElementById("inputNumbers").value;
         numberList = text.split(',');
 
-        // Reset time
-        globalAlgTime = new Date().getTime();
+        if (numberList.length > 1) {
+            // Reset time
+            globalAlgTime = new Date().getTime();
 
-        // Draw Scene and Models
-        tick();
+            // Draw Scene and Models
+            tick();
+        } else {
+            alert('You have to input at least 2 numbers!');
+        }
 
-        //// Run Selected Algorithm
-        //switch (algorithmType) {
-        //    case 0: bubbleSort(numberList);
-        //        result = "BubbleSort: "
-        //        break;
-        //    case 1: numberList = quicksort(numberList);
-        //        result = "QuickSort: "
-        //        break;
-        //    case 2: numberList = mergeSort(numberList);
-        //        result = "MergeSort: "
-        //        break;
-        //}
-
-
-
-
-        //alert(timeElapsed);
-        //alert(algorithmType);
     };
     document.getElementById("XX-on-off-button").onclick = function(){
         // Switching on / off
@@ -935,7 +953,7 @@ function setEventListeners( canvas ){
         tx = 0.0;
         ty = 0.0;
         tz = 0.0;
-        angleXX = 0.0;
+        angleXX = 30.0;
         angleYY = 0.0;
         angleZZ = 0.0;
         sx = 0.05;
@@ -950,6 +968,16 @@ function setEventListeners( canvas ){
         rotationZZ_ON = 0;
         rotationZZ_DIR = 1;
         rotationZZ_SPEED = 1;
+
+        goUp = 0;
+        goDown = 0;
+        goAgain = 0;
+        troca = 1;
+        emCima = 0;
+        sortDone = 0;
+        animDone = 0;
+        document.getElementById("inputNumbers").value = "";
+        runWebGL();
     };      
 }
 
