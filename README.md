@@ -1,5 +1,8 @@
-# cv2015-WebGL
-WebGL project for Visual Computation class
+### Computação Visual (Visual Computing)
+> Ano lectivo de 2015 / 2016 - Universidade de Aveiro
+
+
+# WebGL project
 
 Animação em 3D do funcionamento de algoritmos de ordenação:
 
